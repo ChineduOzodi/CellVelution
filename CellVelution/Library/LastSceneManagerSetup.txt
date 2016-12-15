@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Scenes/species.unity
+- path: Assets/NeuralNetwork/Example Scene/learning.unity
   isLoaded: 1
   isActive: 1

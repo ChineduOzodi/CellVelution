@@ -5,6 +5,8 @@ using System;
 using System.Text.RegularExpressions;
 using CodeControl;
 using UnityEngine.UI;
+using NeuralNetwork;
+
 
 public class Creature : Controller<CreatureModel> {
 
@@ -16,6 +18,7 @@ public class Creature : Controller<CreatureModel> {
     Rigidbody2D rgb;
     SpeciesGame gameController;
     public CreatureModel Model;
+  
 
     Text text;
 
@@ -506,19 +509,19 @@ public class Creature : Controller<CreatureModel> {
         double[] baby1 = new double[p1.Length];
         double[] baby2 = new double[p1.Length];
 
-        GenAlg.Crossover(p1, p2, ref baby1,ref baby2);
+        GeneticAlgorithm.Crossover(p1, p2, ref baby1,ref baby2);
 
         int selection = UnityEngine.Random.Range(0, 2);
 
         if (selection == 0)
         {
-            GenAlg.Mutate(ref baby1);
+            GeneticAlgorithm.Mutate(ref baby1);
 
             return baby1;
         }
         else
         {
-            GenAlg.Mutate(ref baby2);
+            GeneticAlgorithm.Mutate(ref baby2);
 
             return baby2;
         }

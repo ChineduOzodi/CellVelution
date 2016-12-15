@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using CodeControl;
+using NeuralNetwork;
 
 public class SpeciesGame : MonoBehaviour {
 
@@ -70,12 +71,12 @@ public class SpeciesGame : MonoBehaviour {
             if (hit.collider != null)
             {
                 Debug.Log(hit.transform.gameObject.name);
-                nVisual.selectedCreature = hit.transform.GetComponent<Creature>();
+                nVisual.selectedNeuralObject = hit.transform.GetComponent<Creature>();
 
             }
             else
             {
-                nVisual.selectedCreature = null;
+                nVisual.selectedNeuralObject = null;
             }
 
         }
