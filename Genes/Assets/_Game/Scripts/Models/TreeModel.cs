@@ -8,6 +8,9 @@ public class TreeModel : Model {
     public string name;
     public int generation = 1;
 
+    //-----genes------------------//
+    public Genes treeColor;
+
     //-----mutatable data---------//
     public Color color;
     public float richness; //max 5
@@ -65,6 +68,14 @@ public class TreeModel : Model {
         richness = _richness;
         roots = Cap(_roots, 0, 5);
         color = _color;
+
+        Dictionary<string, string[]> phenotypes = new Dictionary<string, string[]>();
+        phenotypes.Add("White", new string[] { "bb" });
+        phenotypes.Add("Red", new string[] { "tt","tb","bt" });
+        phenotypes.Add("Green", new string[] { "TT","Tb","bT","Tt","tT","GB","BG" });
+        phenotypes.Add("Blue", new string[] { "BB", "Bb", "bB", "Bt", "tB" });
+
+        treeColor = new Genes(2, "TtBb", phenotypes);
     }
 
     public void Grow(float deltaTime)

@@ -1,3 +1,1 @@
-<behaviortree name="herbivore">
-  <sequencer name="root"></sequencer>
-</behaviortree>
+<behaviortree version="1.1" repeatuntil="" name="herbivore" debugbreak="False"><sequencer usepriorities="False" repeatuntil="" name="root" debugbreak="False"><move turnspeed="" repeatuntil="" priority="" name="move" movetarget="" movespeed="" facetarget="" debugbreak="False" closeenoughdistance="" closeenoughangle=""></move><constraint repeatuntil="running" priority="" name="if hungry" debugbreak="False" constraint="hunger &gt; 100"><detect sensor="&quot;Visual Sensor&quot;" repeatuntil="" name="detect" matchtype="best" entityobjectvariable="" debugbreak="False" consistent="True" aspectvariable="" aspectobjectvariable="" aspect=""></detect></constraint></sequencer></behaviortree>

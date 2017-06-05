@@ -10,7 +10,11 @@ public class GameManager : MonoBehaviour {
 
     public ModelRefs<TreeModel> trees;
 
-    public GameObject seeds;
+    internal Date date;
+    internal float curTemp;
+    internal float aveTemp = 20;
+
+    internal GameObject seeds;
 
     private float distance = 20f;
 
@@ -18,6 +22,7 @@ public class GameManager : MonoBehaviour {
 	void Start () {
         trees = new ModelRefs<TreeModel>();
         seeds = new GameObject("Seeds");
+        date = new Date();
         instance = this;
     }
 	
@@ -38,6 +43,9 @@ public class GameManager : MonoBehaviour {
             
             tree.NotifyChange();
         }
+
+        date.AddTime(Time.deltaTime);
+        UpdateTemperature();
 	}
 
 
@@ -57,4 +65,17 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+   void OnGUI()
+    {
+
+        GUI.TextArea(new Rect(10, 10, 150, 100), date.GetDateTime() + " Temp: " + curTemp);
+    }
+    internal void UpdateTemperature()
+    {
+        int yearTempRange = 7;
+        int dayTempRange = 3;
+
+        curTemp = aveTemp - yearTempRange * Mathf.Cos(5 / (Mathf.PI * 2)) - yearTempRange * Mathf.Cos((date.day + 5) / (2 * Mathf.PI)) - dayTempRange * Mathf.Cos((date.hour) * Mathf.PI / 12);
+
+    }
 }
