@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Genes {
+public class Genes <T> {
 
     public string genotype { get; set; }
-    public string phenotype { get; set; }
+    public T phenotype { get; set; }
 
-    internal Dictionary<string,string[]> phenotypes;
+    internal Dictionary<T,string[]> phenotypes;
 
-    public Genes Child(Genes gene1, Genes gene2)
+    public Genes<T> Child(Genes<T> gene1, Genes<T> gene2)
     {
-        if (gene1.phenotypes != gene2.phenotypes)
+        if (gene1.phenotypes.Count != gene2.phenotypes.Count)
         {
             throw new System.Exception("phenotype dictionarys do not match");
         }
-        Genes child = new Genes(gene1.phenotypes);
+        Genes<T> child = new Genes<T>(gene1.phenotypes);
         for (int i = 0; i < gene1.genotype.Length; i++)
         {
             int num = Random.Range(0, 2);
@@ -28,15 +28,15 @@ public class Genes {
                 child.genotype += gene2.genotype[i];
             }
         }
-        SetPhenotype();
+        child.SetPhenotype();
         return child;
 
     }
-    public Genes(Dictionary<string,string[]> _phenotypes)
+    public Genes(Dictionary<T,string[]> _phenotypes)
     {
         phenotypes = _phenotypes;
     }
-    public Genes(int geneLength, string geneTypes, Dictionary<string,string[]> _phenotypes)
+    public Genes(int geneLength, string geneTypes, Dictionary<T,string[]> _phenotypes)
     {
         phenotypes = _phenotypes;
 
@@ -49,9 +49,10 @@ public class Genes {
         SetPhenotype();
     }
 
+
     private void SetPhenotype()
     {
-        foreach (string ptype in phenotypes.Keys)
+        foreach (T ptype in phenotypes.Keys)
         {
             for (int i = 0; i < phenotypes[ptype].Length; i++)
             {
@@ -62,7 +63,7 @@ public class Genes {
                 }
             }
         }
-
-        throw new System.Exception("Could not find a matching phenotype for this genotype");
+        if (phenotype == null)
+        throw new System.Exception("Could not find a matching phenotype for this genotype: " + genotype);
     }
 }

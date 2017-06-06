@@ -7,9 +7,10 @@ public class TreeModel : Model {
 
     public string name;
     public int generation = 1;
+    public Date birthDate;
 
     //-----genes------------------//
-    public Genes treeColor;
+    public Genes<Color> treeColor;
 
     //-----mutatable data---------//
     public Color color;
@@ -23,11 +24,20 @@ public class TreeModel : Model {
     //-----Keep Track of Tree------//
     public float height;
     public float deathChance = 0;
-    public float deathRate = .000001f;
+    public float deathAge = Date.secondsInDay;
     private float reproductionCounter;
     public Vector3 position;
-    public bool seed;
+    public bool pollen;
     public bool die;
+    public float lastUpdated;
+
+    public Date age
+    {
+        get
+        {
+            return new Date(lastUpdated - birthDate.time);
+        }
+    }
 
     public TreeModel() { }
 
@@ -43,11 +53,12 @@ public class TreeModel : Model {
         color = Color.green;
     }
 
-    public TreeModel(string _name, Vector3 _position)
+    public TreeModel(string _name, Vector3 _position, Date _birthDate)
     {
 
         name = _name;
         position = _position;
+        birthDate = _birthDate;
         maxHeight = Random.Range(0,10f);
         growthRate = Random.Range(0, .2f);
         reproductionRate = Random.Range(0, .2f);
@@ -55,12 +66,23 @@ public class TreeModel : Model {
         roots = Random.Range(0, 5);
         color = new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
 
+        Dictionary<Color, string[]> phenotypes = new Dictionary<Color, string[]>();
+        phenotypes.Add(Color.white, new string[] { "bb" });
+        phenotypes.Add(Color.red, new string[] { "tt", "tb", "bt" });
+        phenotypes.Add(Color.green, new string[] { "TT", "Tb", "bT", "Tt", "tT", "TB", "BT" });
+        phenotypes.Add(Color.blue, new string[] { "BB", "Bb", "bB", "Bt", "tB" });
+
+        treeColor = new Genes<Color>(2, "TtBb", phenotypes);
+
+        lastUpdated = birthDate.time;
+
     }
 
-    public TreeModel(string _name, Vector3 _position, int _generation, float _maxHeight, float _growthRate, float _reproductionRate, float _richness, float _roots, Color _color)
+    public TreeModel(string _name, Vector3 _position, Date _birthDate, int _generation, float _maxHeight, float _growthRate, float _reproductionRate, float _richness, float _roots, Color _color, Genes<Color> _treeColor)
     {
         name = _name;
         generation = _generation;
+        birthDate = _birthDate;
         position = _position;
         maxHeight = _maxHeight;
         growthRate = _growthRate;
@@ -68,21 +90,18 @@ public class TreeModel : Model {
         richness = _richness;
         roots = Cap(_roots, 0, 5);
         color = _color;
+        treeColor = _treeColor;
 
-        Dictionary<string, string[]> phenotypes = new Dictionary<string, string[]>();
-        phenotypes.Add("White", new string[] { "bb" });
-        phenotypes.Add("Red", new string[] { "tt","tb","bt" });
-        phenotypes.Add("Green", new string[] { "TT","Tb","bT","Tt","tT","GB","BG" });
-        phenotypes.Add("Blue", new string[] { "BB", "Bb", "bB", "Bt", "tB" });
+        lastUpdated = birthDate.time;
 
-        treeColor = new Genes(2, "TtBb", phenotypes);
+        
     }
 
     public void Grow(float deltaTime)
     {
         
-        deathChance += deathRate * deltaTime;
-        if (Random.Range(0,1f) < deathChance)
+        deathChance += deathAge * deltaTime;
+        if (age.Hour > maxHeight)
         {
             die = true;
         }
@@ -96,10 +115,15 @@ public class TreeModel : Model {
             reproductionCounter += reproductionRate * deltaTime;
             if (reproductionCounter >= 1)
             {
-                seed = true;
+                if (Random.Range(0,2) == 1)
+                {
+                    pollen = true;
+                }
                 reproductionCounter = 0;
             }
         }
+
+        lastUpdated += deltaTime;
     }
 
     private float Cap(float number, float min, float max)

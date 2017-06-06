@@ -6,8 +6,11 @@ using CodeControl;
 public class SeedModel : Model {
 
     //-----mutatable data---------//
-    public float seedForce;
-    public float germinationRate;
+    public float seedForce = 10;
+    public float germinationChance = .5f;
+
+    //-----Tree Genes---------//
+    public Genes<Color> treeColor;
 
     //-----Tree data -----//
     public string name;
@@ -40,8 +43,6 @@ public class SeedModel : Model {
 
     public SeedModel(Vector3 _position, Quaternion _rotation)
     {
-        germinationRate = .1f;
-        seedForce = 100f;
 
         position = _position;
         rotation = _rotation;
@@ -57,9 +58,9 @@ public class SeedModel : Model {
         
     }
 
-    public SeedModel(Vector3 _position, Quaternion _rotation, string _name, int _generation, float _maxHeight, float _growthRate, float _reproductionRate, float _richness, float _roots, Color _color)
+    public SeedModel(Vector3 _position, Quaternion _rotation, string _name, int _generation, float _maxHeight, float _growthRate, float _reproductionRate, float _richness, float _roots, Color _color, Genes<Color> _treeColor)
     {
-        germinationRate = .1f;
+        germinationChance = .1f;
         seedForce = 100f;
 
         position = _position;
@@ -76,6 +77,7 @@ public class SeedModel : Model {
         color = new Color(Cap(Random.Range(_color.r - colorMutation, color.r + colorMutation), 0, 1f),
             Cap(Random.Range(_color.g - colorMutation, color.g + colorMutation), 0, 1f),
            Cap(Random.Range(_color.b - colorMutation, color.b + colorMutation), 0, 1f));
+        treeColor = _treeColor;
 
     }
 
