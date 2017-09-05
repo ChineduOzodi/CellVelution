@@ -28,6 +28,10 @@ public class machineLearning2 : MonoBehaviour {
     public int numFood = 3;
     public float speedAdj = .1f;
 
+    int randomWatchSpecies = 0;
+    int randomWatchGenome = 0;
+    int randomWatchSpawn = 0;
+
     internal GameObject[] spawns;
     internal GameObject[] foods;
     internal GeneticAlgorithm genAlg;
@@ -63,7 +67,9 @@ public class machineLearning2 : MonoBehaviour {
             if (i == 0)
             {
                 genAlg = new GeneticAlgorithm(population,numInputs,numOutputs);
-                graph.CreateGraph(genAlg.population[0]);
+                randomWatchSpecies = Random.Range(0, genAlg.species.Count);
+                randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
+                graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
             }
             //--------Set the random weights generated in genAlg into 
             //nNetwork[i].PutWeights(genAlg.population[i].weights);
@@ -98,7 +104,8 @@ public class machineLearning2 : MonoBehaviour {
         {
             Time.timeScale *= 2;
         }
-
+        int species = 0;
+        int genome = 0;
         //Update each spawn in the population, used to increase their fitness as needed and have them respond to the inputs
         for (int i = 0; i < population; i++)
         {
@@ -127,8 +134,10 @@ public class machineLearning2 : MonoBehaviour {
             //---------------Create the input list--------------------------------------------\\
             List<double> input = new List<double> { relPos.x, relPos.y , relRotation.x, relRotation.y, 1};
 
+            
             //---------------Get the ouput list by inputing the input list--------------------\\
-            List<double> output = genAlg.population[i].Run(input);
+            List<double> output = genAlg.species[species].population[genome].Run(input);
+            
 
             
             //----------------Applying the output to te spawn---------------------------------\\
@@ -138,7 +147,7 @@ public class machineLearning2 : MonoBehaviour {
             //---------------Increasing Fitness-------------------------------------------------\\
             if (distance < 1f)
             {
-                genAlg.population[i].fitness += genAlg.population[i].fitness * .1F + 1;
+                genAlg.species[species].population[genome].fitness += genAlg.species[species].population[genome].fitness * .1F + 1;
 
                 //move food particle
                 closestFood.transform.position = new Vector3(Random.Range(0, gameArea.x), Random.Range(0, gameArea.y));
@@ -151,26 +160,36 @@ public class machineLearning2 : MonoBehaviour {
                 infoText.text = "Generation: " + genAlg.generation + "\nInputs: relPosX, relPosY, relRotaionX, relRotationY\nOutputs: rightRotation, leftRotation"
                     + "\nTime: " + Time.time.ToString("0")
                     + "\nTime Scale: " + Time.timeScale;
-                bestFitness = genAlg.population[i].fitness;
+                bestFitness = genAlg.species[species].population[genome].fitness;
                 bestSpawn = i;
 
 
                 //----------------Use the first spawn as the selected object in visual representation--------------//
                 if (updateGraph)
-                    graph.NodeUpdate(genAlg.population[0]);
+                    graph.NodeUpdate(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
             }
             else
             {
-                if (bestFitness < genAlg.population[i].fitness)
+                if (bestFitness < genAlg.species[species].population[genome].fitness)
                 {
-                    bestFitness = genAlg.population[i].fitness;
+                    bestFitness = genAlg.species[species].population[genome].fitness;
                     sprite = spawns[bestSpawn].GetComponent<SpriteRenderer>();
-                    sprite.color = Color.blue;
+                    sprite.color = genAlg.species[species].color;
                     bestSpawn = i;
                     sprite = spawns[i].GetComponent<SpriteRenderer>();
                     sprite.color = Color.yellow;
 
                 }
+            }
+
+            if (species == randomWatchSpecies && genome == randomWatchGenome)
+                randomWatchSpawn = i;
+            
+            genome++;
+            if (genome >= genAlg.species[species].population.Count)
+            {
+                species++;
+                genome = 0;
             }
 
             //Border control
@@ -192,7 +211,7 @@ public class machineLearning2 : MonoBehaviour {
         fitnessGraph.UpdateGraph(genAlg.generation, genAlg.bestFitness, genAlg.averageFitness);
 
         //Change first spawn's color so it is recognizable
-        spawns[0].GetComponent<SpriteRenderer>().color = Color.cyan;
+        spawns[randomWatchSpawn].GetComponent<SpriteRenderer>().color = Color.cyan;
 
 
         //----------------Creates the New Population using the fitness levels of the old one----------------//
@@ -201,7 +220,7 @@ public class machineLearning2 : MonoBehaviour {
             updateTime += populationResetTime;
 
             //--------------The main function that creates the new population into the genAlg class--------//
-            genAlg.Epoch(genAlg.population);
+            genAlg.Epoch();
 
             for (int i = 0; i < population; i++)
             {
@@ -217,7 +236,9 @@ public class machineLearning2 : MonoBehaviour {
             {
                 foods[i].transform.position = new Vector3(Random.Range(0, gameArea.x), Random.Range(0, gameArea.y));
             }
-            graph.CreateGraph(genAlg.population[0]);
+            randomWatchSpecies = Random.Range(0, genAlg.species.Count);
+            randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
+            graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
         }
     }
 }

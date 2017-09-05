@@ -16,16 +16,16 @@ namespace NeuralNetwork
         /// <summary>
         /// List of the populations genomes/neural weights
         /// </summary>
-        public List<Genome> population;
+        public List<Species> species;
 
         private int popSize;
         private int chromoLength;
-        private double totalFitness = 0;
+        private double totalBestFitness = 0;
 
         public double bestFitness, averageFitness = 0;
         public double worstFitness = 9999999999999999;
 
-        private int fittestGenome = 0;
+        private int fittestSpecies = 0;
 
         double compatibilityThreshold = 3;
         
@@ -33,7 +33,7 @@ namespace NeuralNetwork
         /// <summary>
         /// The generation count
         /// </summary>
-        public int generation;
+        public int generation = 1;
 
         int numInputs;
         int numOutputs;
@@ -50,84 +50,79 @@ namespace NeuralNetwork
             popSize = _popSize;
             numInputs = _numInputs;
             numOutputs = _numOutputs;
-            population = new List<Genome>();
+            species = new List<Species>();
 
-            for (int i = 0; i < popSize; i++)
+            species.Add(new Species());
+            species[0].population = new List<Genome>();
+            species[0].population.Add(new Genome(numInputs, numOutputs));
+
+            for (int i = 1; i < popSize; i++)
             {
-                population.Add(new Genome(numInputs,numOutputs));
-            }
-        }
+                var genome = new Genome(numInputs, numOutputs);
 
-        private Genome GetChromoRoulette()
-        {
-            double slice = Random.Range(0f, 1f) * totalFitness;
+                bool fitFound = false;
 
-            Genome chosen = new Genome(numInputs,numOutputs);
-
-            if (totalFitness <= 0)
-            {
-                int index = Random.Range(0, population.Count);
-
-                chosen = new Genome(numInputs,numOutputs);
-
-                System.Console.Write("No winners");
-                return chosen;
-
-            }
-
-            double fitnessSoFar = 0;
-
-            for (int i = 0; i < popSize; i++)
-            {
-                fitnessSoFar += population[i].fitness;
-
-                if (fitnessSoFar >= slice)
+                for (int b = 0; b < species.Count; b++) //TODO: makes speciation front heavy, shold fix to goto the one with greatest compatibility
                 {
-                    chosen = population[i];
-                    break;
+                    if (Genome.CompatibilityDistance(species[i].population[0],genome) < compatibilityThreshold)
+                    {
+                        species[i].population.Add(genome);
+                        fitFound = true;
+                        break;
+                    }
                 }
-            }
 
-            return chosen;
+                if (!fitFound)
+                {
+                    species.Add(new Species());
+                    species[i].population = new List<Genome>();
+                    species[i].population.Add(genome);
+                }
+                
+            }
         }
+
+        
 
         public void CalculateBestWorstAvTot()
         {
-            totalFitness = 0;
+            totalBestFitness = 0;
 
             double highestSoFar = 0;
             double lowestSoFar = 99999999999;
 
-            for (int i = 0; i < popSize; i++)
+            for (int i = 0; i < species.Count; i++)
             {
-                //updates fittest if necessary
-                if (population[i].fitness > highestSoFar)
-                {
-                    highestSoFar = population[i].fitness;
+                species[i].CalculateBestWorstAvTot();
 
-                    fittestGenome = i;
+                //updates fittest if necessary
+                if (species[i].bestFitness > highestSoFar)
+                {
+                    highestSoFar = species[i].bestFitness;
+
+                    fittestSpecies = i;
 
                     bestFitness = highestSoFar;
                 }
 
                 //update Worst
-                if (population[i].fitness < lowestSoFar)
+                if (species[i].bestFitness < lowestSoFar)
                 {
-                    lowestSoFar = population[i].fitness;
+                    lowestSoFar = species[i].bestFitness;
 
                     worstFitness = lowestSoFar;
                 }
 
-                totalFitness += population[i].fitness;
+                totalBestFitness += species[i].bestFitness;
             }
 
-            averageFitness = totalFitness / popSize;
+            averageFitness = totalBestFitness / species.Count;
 
         }
 
         private void Reset()
         {
-            totalFitness = 0;
+            totalBestFitness = 0;
             bestFitness = 0;
             worstFitness = 9999999999;
             averageFitness = 0;
@@ -139,35 +134,61 @@ namespace NeuralNetwork
         /// </summary>
         /// <param name="oldPop"></param>
         /// <returns>new population genome</returns>
-        public List<Genome> Epoch(List<Genome> oldPop)
+        public void Epoch()
         {
-
-            population = oldPop;
-
-
             CalculateBestWorstAvTot();
+            var oldPop = new List<Species>(species);
 
             //sorts population by fitness level
             //population.Sort();
 
-            List<Genome> newPop = new List<Genome>();
+            species = new List<Species>();
 
-            while (newPop.Count < popSize)
+            int currentPopSize = 0;
+
+            foreach (Species sp in oldPop)
             {
-                Genome mum = GetChromoRoulette();
-                Genome dad = GetChromoRoulette();
+                if (sp.generationStagnation < sp.generationStagnationLimit)
+                {
+                    sp.generationStagnation++;
+
+                    species.Add(new Species(sp.generation + 1, sp.oldBestFitness, sp.color));
+                    species[species.Count - 1].generationStagnation = sp.generationStagnation;
+                    species[species.Count - 1].population.Add(sp.population[sp.fittestGenome]);
+
+                    species[species.Count - 1].popSize = Mathf.RoundToInt((float)(totalBestFitness / sp.bestFitness));
+
+                    currentPopSize++;
+
+                    while (species[species.Count - 1].population.Count < species[species.Count - 1].popSize)
+                    {
+                        Genome mum = Genome.DeepCopy(sp.GetChromoRoulette());
+                        Genome dad = Genome.DeepCopy(sp.GetChromoRoulette());
+
+                        Genome childA = Genome.Mate(mum, dad);
+
+                        species[species.Count - 1].population.Add(childA);
+                        currentPopSize++;
+
+                    }
+
+                }
+            }
+            
+            while (currentPopSize  < popSize)
+            {
+                int spI = Random.Range(0, species.Count);
+
+                Genome mum = Genome.DeepCopy(species[spI].GetChromoRoulette());
+                Genome dad = Genome.DeepCopy(species[spI].GetChromoRoulette());
 
                 Genome childA = Genome.Mate(mum, dad);
-                Genome childB = Genome.Mate(mum, dad);
 
-                newPop.Add(childA);
-                newPop.Add(childB);
-
+                species[spI].population.Add(childA);
+                currentPopSize++;
             }
             Reset();
-            population = newPop;
             generation++;
-            return population;
         }
 
     }
