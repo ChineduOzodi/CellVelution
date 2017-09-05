@@ -49,7 +49,7 @@ public class TreeController : Controller<TreeModel> {
         float direction = UnityEngine.Random.Range(0, 360f);
         seedLaunch.transform.eulerAngles = new Vector3(0, direction, 0);
         SeedModel seed = new SeedModel(seedLaunch.position, seedLaunch.transform.rotation, model.name, model.generation, model.maxHeight, model.growthRate, model.reproductionRate, model.richness, model.roots, model.color);
-        Controller.Instantiate<SeedController>("seed",seed,GameManager.instance.seeds.transform);
+        Controller.Instantiate<SeedController>("seed",seed,GenesGameManager.instance.seeds.transform);
 
         model.seed = false;
     }

@@ -21,8 +21,8 @@ public class SeedController : Controller<SeedModel> {
         }
         if (model.germinate)
         {
-            TreeModel tree = new TreeModel("Tree" + GameManager.instance.trees.Count + 1, transform.position, model.generation,model.maxHeight, model.growthRate, model.reproductionRate, model.richness, model.roots, model.color);
-            GameManager.instance.trees.Add(tree);
+            TreeModel tree = new TreeModel("Tree" + GenesGameManager.instance.trees.Count + 1, transform.position, model.generation,model.maxHeight, model.growthRate, model.reproductionRate, model.richness, model.roots, model.color);
+            GenesGameManager.instance.trees.Add(tree);
             Controller.Instantiate<TreeController>("tree", tree);
             model.Delete();
         }
