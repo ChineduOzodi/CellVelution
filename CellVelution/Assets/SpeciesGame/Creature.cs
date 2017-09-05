@@ -63,7 +63,7 @@ public class Creature : Controller<CreatureModel> {
     void Update () {
         text.transform.eulerAngles = new Vector3(0, 0, 0);
         SetInputs();
-        model.ouputs = model.nNetwork.Update(model.inputs);
+        model.ouputs = model.genome.Run(model.inputs);
         ApplyOutputs();
 
         //Apply effects
@@ -96,7 +96,7 @@ public class Creature : Controller<CreatureModel> {
 
             Creature creature = Controller.Instantiate<Creature>("creature", babyModel, transform.parent);
 
-            babyModel.nNetwork.PutWeights(ShareKnowledge(this));
+
 
             Vector3 location = transform.position;
 
@@ -112,7 +112,7 @@ public class Creature : Controller<CreatureModel> {
             babyModel.numNodeHiddenLayers = model.numNodeHiddenLayers;
             babyModel.generation = model.generation + 1;
             babyModel = CreateCreature(babyModel, babyGenes);
-            babyModel.nNetwork.PutWeights(ShareKnowledge(this));
+
 
             creature = Controller.Instantiate<Creature>("creature", babyModel, transform.parent);
 
@@ -416,12 +416,9 @@ public class Creature : Controller<CreatureModel> {
                         Mate(cre);
                         model.nutrition *= .75f;
                         cre.model.nutrition *= .75f;
-
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
                     }
                     else
                     {
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
                     }
                 }
             }
@@ -442,11 +439,10 @@ public class Creature : Controller<CreatureModel> {
                         model.nutrition *= .75f;
                         cre.model.nutrition *= .75f;
 
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
                     }
                     else
                     {
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
+
                     }
                 }
             }
@@ -472,11 +468,10 @@ public class Creature : Controller<CreatureModel> {
                         model.nutrition *= .75f;
                         cre.model.nutrition *= .75f;
 
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
                     }
                     else
                     {
-                        model.nNetwork.PutWeights(ShareKnowledge(cre));
+
                     }
                 }
             }
@@ -501,34 +496,6 @@ public class Creature : Controller<CreatureModel> {
         Message.Send("Creature Death");
     }
 
-    private double[] ShareKnowledge(Creature cre)
-    {
-        double[] p1 = model.nNetwork.GetWeights();
-        double[] p2 = cre.model.nNetwork.GetWeights();
-
-        double[] baby1 = new double[p1.Length];
-        double[] baby2 = new double[p1.Length];
-
-        GeneticAlgorithm.Crossover(p1, p2, ref baby1,ref baby2);
-
-        int selection = UnityEngine.Random.Range(0, 2);
-
-        if (selection == 0)
-        {
-            GeneticAlgorithm.Mutate(ref baby1);
-
-            return baby1;
-        }
-        else
-        {
-            GeneticAlgorithm.Mutate(ref baby2);
-
-            return baby2;
-        }
-
-        print("Shared knowledge");
-    }
-
     private void Mate(Creature cre)
     {
         bool[] babyGenes = cre.Model.genes.Mate(model.genes.genes);
@@ -542,8 +509,6 @@ public class Creature : Controller<CreatureModel> {
         babyModel.generation = model.generation + 1;
 
         babyModel = CreateCreature(babyModel, babyGenes);
-
-        babyModel.nNetwork.PutWeights(ShareKnowledge(cre));
 
         Creature creature = Controller.Instantiate<Creature>("creature", babyModel, transform.parent);
 
@@ -673,7 +638,7 @@ public class Creature : Controller<CreatureModel> {
         model.inputs = new List<double>();
         model.ouputs = new List<double>();
 
-        model.nNetwork = new NeuralNet(model.numInputs, model.numOutputs, model.numHiddenLayers, model.numNodeHiddenLayers);
+        model.genome = Genome.Mate(model.genome, model.genome);
 
 
         string[][] startBlock =

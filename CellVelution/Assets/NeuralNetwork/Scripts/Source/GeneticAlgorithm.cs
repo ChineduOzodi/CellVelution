@@ -27,19 +27,16 @@ namespace NeuralNetwork
 
         private int fittestGenome = 0;
 
-        /// <summary>
-        /// Mutation rate
-        /// </summary>
-        public static double mutationRate = .2;
-        /// <summary>
-        /// Crossover rate
-        /// </summary>
-        public static double crossOverRate = .7;
+        double compatibilityThreshold = 3;
+        
 
         /// <summary>
         /// The generation count
         /// </summary>
         public int generation;
+
+        int numInputs;
+        int numOutputs;
 
         /// <summary>
         /// Creates the gene alg class with desired population size, mutation rate, crossover rate, and number of weight
@@ -48,83 +45,16 @@ namespace NeuralNetwork
         /// <param name="mutRat"> mutation rate</param>
         /// <param name="crossRate">crossover rate</param>
         /// <param name="numWeights">number of weights in gene, gotten from the GetNumWeights function in the NeuralNet class</param>
-        public GeneticAlgorithm(int _popSize, double mutRat, double crossRate, int numWeights)
+        public GeneticAlgorithm(int _popSize, int _numInputs, int _numOutputs)
         {
-            mutationRate = mutRat;
-            crossOverRate = crossRate;
             popSize = _popSize;
-            chromoLength = numWeights;
-
+            numInputs = _numInputs;
+            numOutputs = _numOutputs;
             population = new List<Genome>();
 
             for (int i = 0; i < popSize; i++)
             {
-                population.Add(new Genome(new double[chromoLength]));
-
-                for (int j = 0; j < chromoLength; j++)
-                {
-                    population[i].weights[j] = Random.Range(-1f, 1f);
-
-
-                }
-            }
-        }
-
-        /// <summary>
-        /// Crosses over parent one and two at a random indixes
-        /// </summary>
-        /// <param name="mum"></param>
-        /// <param name="dad"></param>
-        /// <param name="baby1"></param>
-        /// <param name="baby2"></param>
-        public static void Crossover(double[] mum, double[] dad, ref double[] baby1, ref double[] baby2)
-        {
-            if (Random.Range(0f, 1f) > crossOverRate || mum == dad)
-            {
-                baby1 = mum;
-                baby2 = dad;
-
-                return;
-            }
-
-            int cp = Random.Range(0, mum.Length - 1);
-            //print("crossover at " + cp);
-            //Create the offspring
-
-            for (int i = 0; i < cp; i++)
-            {
-                baby1[i] = mum[i];
-                baby2[i] = dad[i];
-            }
-            for (int i = cp; i < mum.Length; i++)
-            {
-                baby1[i] = dad[i];
-                baby2[i] = mum[i];
-            }
-
-            return;
-        }
-
-        /// <summary>
-        /// Mutates points in the weight list/chromosome randomly
-        /// </summary>
-        /// <param name="chromo">weight list</param>
-        public static void Mutate(ref double[] chromo)
-        {
-            for (int i = 0; i < chromo.Length; i++)
-            {
-                float randFloat = Random.Range(0f, 1f);
-                if (randFloat < mutationRate)
-                {
-                    randFloat = Random.Range(-.1f, .1f);
-                    //print("mutation");
-                    chromo[i] += randFloat;
-
-                    if (chromo[i] > 1)
-                        chromo[i] = 1;
-                    else if (chromo[i] < 0)
-                        chromo[i] = 0;
-                }
+                population.Add(new Genome(numInputs,numOutputs));
             }
         }
 
@@ -132,27 +62,18 @@ namespace NeuralNetwork
         {
             double slice = Random.Range(0f, 1f) * totalFitness;
 
-            Genome chosen = new Genome();
+            Genome chosen = new Genome(numInputs,numOutputs);
 
             if (totalFitness <= 0)
             {
                 int index = Random.Range(0, population.Count);
 
-                chosen = new Genome(new double[chromoLength]);
-
-                for (int j = 0; j < chromoLength; j++)
-                {
-                    chosen.weights[j] = Random.Range(-1f, 1f);
-
-
-                }
+                chosen = new Genome(numInputs,numOutputs);
 
                 System.Console.Write("No winners");
                 return chosen;
 
             }
-
-
 
             double fitnessSoFar = 0;
 
@@ -236,16 +157,11 @@ namespace NeuralNetwork
                 Genome mum = GetChromoRoulette();
                 Genome dad = GetChromoRoulette();
 
-                double[] baby1 = new double[chromoLength];
-                double[] baby2 = new double[chromoLength];
+                Genome childA = Genome.Mate(mum, dad);
+                Genome childB = Genome.Mate(mum, dad);
 
-                Crossover(mum.weights, dad.weights, ref baby1, ref baby2);
-
-                Mutate(ref baby1);
-                Mutate(ref baby2);
-
-                newPop.Add(new Genome(baby1));
-                newPop.Add(new Genome(baby2));
+                newPop.Add(childA);
+                newPop.Add(childB);
 
             }
             Reset();

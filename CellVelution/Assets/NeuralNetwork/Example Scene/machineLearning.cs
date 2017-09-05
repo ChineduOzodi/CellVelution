@@ -12,9 +12,7 @@ public class machineLearning : MonoBehaviour {
 
     public Text infoText;
 
-    internal SpriteRenderer[] inputObj;
-    internal SpriteRenderer[][] layersObj;
-    internal LineRenderer[][][] weightObj;
+    public FitnessGraph fitnessGraph;
 
     public GameObject spawn;
     public GameObject food;
@@ -57,7 +55,7 @@ public class machineLearning : MonoBehaviour {
         for (int i = 0; i < population; i++)
         {
             spawns[i] = Instantiate(spawn, spawnParent.transform) as GameObject;
-            spawns[i].transform.position = new Vector3(Random.Range(0, gameArea.x), Random.Range(0, gameArea.y)); //Set spawn in random map location
+            spawns[i].transform.position = new Vector3(gameArea.x * .5f, gameArea.y * .5f); //Set spawn in random map location
 
             //-------Create neural network with defined inputs and ouputs for each spawn----------//
             nNetwork[i] = new NeuralNet(numInputs, numOutputs, numHiddenLayers, numNodeHiddenLayers); 
@@ -65,10 +63,10 @@ public class machineLearning : MonoBehaviour {
             //-------Creates on Genetic algorithm to handle the whole popluation-----------------//
             if (i == 0)
             {
-                genAlg = new GeneticAlgorithm(population, .2, .7, nNetwork[0].GetNumWeights());
+                genAlg = new GeneticAlgorithm(population,numInputs,numOutputs);
             }
             //--------Set the random weights generated in genAlg into 
-            nNetwork[i].PutWeights(genAlg.population[i].weights);
+            //nNetwork[i].PutWeights(genAlg.population[i].weights);
         }
 
         //Setup food
@@ -140,7 +138,7 @@ public class machineLearning : MonoBehaviour {
             //---------------Increasing Fitness-------------------------------------------------\\
             if (distance < 1f)
             {
-                genAlg.population[i] = new Genome(genAlg.population[i].weights, genAlg.population[i].fitness + 1);
+                genAlg.population[i].fitness += genAlg.population[i].fitness * .5f + 1;
 
                 //move food particle
                 closestFood.transform.position = new Vector3(Random.Range(0, gameArea.x), Random.Range(0, gameArea.y));
@@ -172,26 +170,27 @@ public class machineLearning : MonoBehaviour {
                     sprite = spawns[i].GetComponent<SpriteRenderer>();
                     sprite.color = Color.yellow;
 
+                    
                 }
             }
 
             //Border control
-            if (spawns[i].transform.position.y < 0)
-                spawns[i].transform.position = new Vector3(spawns[i].transform.position.x, gameArea.y);
-            else if (spawns[i].transform.position.y > gameArea.y)
-                spawns[i].transform.position = new Vector3(spawns[i].transform.position.x, 0);
+            //if (spawns[i].transform.position.y < 0)
+            //    spawns[i].transform.position = new Vector3(spawns[i].transform.position.x, gameArea.y);
+            //else if (spawns[i].transform.position.y > gameArea.y)
+            //    spawns[i].transform.position = new Vector3(spawns[i].transform.position.x, 0);
 
-            if (spawns[i].transform.position.x < 0)
-                spawns[i].transform.position = new Vector3(gameArea.x, spawns[i].transform.position.y);
-            else if (spawns[i].transform.position.x > gameArea.x)
-                spawns[i].transform.position = new Vector3(0, spawns[i].transform.position.y);
+            //if (spawns[i].transform.position.x < 0)
+            //    spawns[i].transform.position = new Vector3(gameArea.x, spawns[i].transform.position.y);
+            //else if (spawns[i].transform.position.x > gameArea.x)
+            //    spawns[i].transform.position = new Vector3(0, spawns[i].transform.position.y);
 
         }
 
         //More Stats
         genAlg.CalculateBestWorstAvTot();
         infoText.text += "\nBest Fitness: " + genAlg.bestFitness + "\nAverage Fitness: " + genAlg.averageFitness + "\nLowest Fitness: " + genAlg.worstFitness;
-
+        fitnessGraph.UpdateGraph(genAlg.generation, genAlg.bestFitness, genAlg.averageFitness);
         //Change first spawn's color so it is recognizable
         spawns[0].GetComponent<SpriteRenderer>().color = Color.cyan;
 
@@ -207,10 +206,10 @@ public class machineLearning : MonoBehaviour {
             for (int i = 0; i < population; i++)
             {
                 //change all of the spawns positions
-                spawns[i].transform.position = new Vector3(Random.Range(0, gameArea.x), Random.Range(0, gameArea.y));
+                spawns[i].transform.position = new Vector3(gameArea.x * .5f, gameArea.y * .5f);
 
                 //Update the spawns neural networks with the new weights
-                nNetwork[i].PutWeights(genAlg.population[i].weights);
+                //nNetwork[i].PutWeights(genAlg.population[i].weights);
             }
 
             //change the location of all the food

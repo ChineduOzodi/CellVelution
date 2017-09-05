@@ -35,7 +35,7 @@ public class CreatureModel : Model {
     public int numHiddenLayers;
     public int numNodeHiddenLayers;
 
-    public NeuralNet nNetwork;
+    public Genome genome;
     public List<double> inputs;
     public List<double> ouputs;
 }

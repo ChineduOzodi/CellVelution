@@ -7,7 +7,6 @@ using NeuralNetwork;
 
 public class SpeciesGame : MonoBehaviour {
 
-    internal NeuralVisualizer nVisual;
 
     public Text infoText;
     public int minPop = 100;
@@ -32,7 +31,7 @@ public class SpeciesGame : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        nVisual = GetComponent<NeuralVisualizer>();
+
         population = startingPop;
         parent = new GameObject("Population");
         for (int i = 0; i < startingPop; i++)
@@ -71,12 +70,12 @@ public class SpeciesGame : MonoBehaviour {
             if (hit.collider != null)
             {
                 Debug.Log(hit.transform.gameObject.name);
-                nVisual.selectedNeuralObject = hit.transform.GetComponent<Creature>();
+                //nVisual.selectedNeuralObject = hit.transform.GetComponent<Creature>();
 
             }
             else
             {
-                nVisual.selectedNeuralObject = null;
+                //nVisual.selectedNeuralObject = null;
             }
 
         }

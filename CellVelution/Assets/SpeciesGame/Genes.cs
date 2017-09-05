@@ -5,19 +5,18 @@ using System.Collections.Generic;
 
 public class Genes {
 
-    [SerializeField]
-    int length;
-    [SerializeField]
-    int numBlocks;
-    [SerializeField]
-    string[][] startBlock;
-    [SerializeField]
-    string[][] geneBlock;
-    [SerializeField]
-    float crossOverRate;
-    [SerializeField]
-    float mutationRate;
-    [SerializeField]
+    public int length;
+
+    public int numBlocks;
+
+    public string[][] startBlock;
+
+    public string[][] geneBlock;
+
+    public float crossOverRate;
+
+    public float mutationRate;
+
     public bool[] genes;
 
 	
