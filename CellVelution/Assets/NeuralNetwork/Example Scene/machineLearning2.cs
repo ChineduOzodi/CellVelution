@@ -14,6 +14,7 @@ public class machineLearning2 : MonoBehaviour {
     public NeuralMap graph;
     public bool updateGraph;
     public FitnessGraph fitnessGraph;
+    public SpeciesGraph speciesGraph;
 
     public GameObject spawn;
     public GameObject food;
@@ -70,6 +71,7 @@ public class machineLearning2 : MonoBehaviour {
                 randomWatchSpecies = Random.Range(0, genAlg.species.Count);
                 randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
                 graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
+                speciesGraph.UpdateGraph(genAlg.species,genAlg.generation);
             }
             //--------Set the random weights generated in genAlg into 
             //nNetwork[i].PutWeights(genAlg.population[i].weights);
@@ -112,7 +114,7 @@ public class machineLearning2 : MonoBehaviour {
             GameObject closestFood = foods[0];
             float distance = Vector3.Distance(closestFood.transform.position, spawns[i].transform.position); //distance to closest food
             SpriteRenderer sprite = spawns[i].GetComponent<SpriteRenderer>();//get spawn sprite
-            sprite.color = Color.blue;
+            sprite.color = genAlg.species[species].color;
 
             for (int j = 0; j < numFood; j++) //Finds the closest food item
             {
@@ -159,7 +161,8 @@ public class machineLearning2 : MonoBehaviour {
             {
                 infoText.text = "Generation: " + genAlg.generation + "\nInputs: relPosX, relPosY, relRotaionX, relRotationY\nOutputs: rightRotation, leftRotation"
                     + "\nTime: " + Time.time.ToString("0")
-                    + "\nTime Scale: " + Time.timeScale;
+                    + "\nTime Scale: " + Time.timeScale
+                    + "\nSpecies Count: " + genAlg.species.Count;
                 bestFitness = genAlg.species[species].population[genome].fitness;
                 bestSpawn = i;
 
@@ -239,6 +242,7 @@ public class machineLearning2 : MonoBehaviour {
             randomWatchSpecies = Random.Range(0, genAlg.species.Count);
             randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
             graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
+            speciesGraph.UpdateGraph(genAlg.species, genAlg.generation);
         }
     }
 }

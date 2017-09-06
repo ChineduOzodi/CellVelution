@@ -27,7 +27,7 @@ namespace NeuralNetwork
 
         private int fittestSpecies = 0;
 
-        double compatibilityThreshold = 3;
+        double compatibilityThreshold = .5f; //default: 3
         
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace NeuralNetwork
 
                 for (int b = 0; b < species.Count; b++) //TODO: makes speciation front heavy, shold fix to goto the one with greatest compatibility
                 {
-                    if (Genome.CompatibilityDistance(species[i].population[0],genome) < compatibilityThreshold)
+                    if (Genome.CompatibilityDistance(species[b].population[0],genome) < compatibilityThreshold)
                     {
-                        species[i].population.Add(genome);
+                        species[b].population.Add(genome);
                         fitFound = true;
                         break;
                     }
@@ -75,8 +75,8 @@ namespace NeuralNetwork
                 if (!fitFound)
                 {
                     species.Add(new Species());
-                    species[i].population = new List<Genome>();
-                    species[i].population.Add(genome);
+                    species[species.Count - 1].population = new List<Genome>();
+                    species[species.Count - 1].population.Add(genome);
                 }
                 
             }
@@ -152,22 +152,41 @@ namespace NeuralNetwork
                 {
                     sp.generationStagnation++;
 
-                    species.Add(new Species(sp.generation + 1, sp.oldBestFitness, sp.color));
-                    species[species.Count - 1].generationStagnation = sp.generationStagnation;
-                    species[species.Count - 1].population.Add(sp.population[sp.fittestGenome]);
+                    species.Add(new Species(sp.generation + 1, sp.oldBestFitness,sp.speciesName, sp.color));
+                    int currentSpecies = species.Count - 1;
 
-                    species[species.Count - 1].popSize = Mathf.RoundToInt((float)(totalBestFitness / sp.bestFitness));
+                    species[currentSpecies].generationStagnation = sp.generationStagnation;
+                    species[currentSpecies].population.Add(sp.population[sp.fittestGenome]);
+                    species[currentSpecies].population[species[currentSpecies].population.Count - 1].fitness = 0;
 
+                    species[currentSpecies].popSize = Mathf.RoundToInt((float)(sp.bestFitness / totalBestFitness * popSize));
                     currentPopSize++;
 
-                    while (species[species.Count - 1].population.Count < species[species.Count - 1].popSize)
+                    for (int i = 0; i < species[currentSpecies].popSize;i++)
                     {
                         Genome mum = Genome.DeepCopy(sp.GetChromoRoulette());
                         Genome dad = Genome.DeepCopy(sp.GetChromoRoulette());
 
                         Genome childA = Genome.Mate(mum, dad);
 
-                        species[species.Count - 1].population.Add(childA);
+                        bool fitFound = false;
+
+                        for (int b = 0; b < species.Count; b++) //TODO: makes speciation front heavy, shold fix to goto the one with greatest compatibility
+                        {
+                            if (Genome.CompatibilityDistance(species[b].population[0], childA) < compatibilityThreshold)
+                            {
+                                species[b].population.Add(childA);
+                                fitFound = true;
+                                break;
+                            }
+                        }
+
+                        if (!fitFound)
+                        {
+                            species.Add(new Species());
+                            species[species.Count - 1].population = new List<Genome>();
+                            species[species.Count - 1].population.Add(childA);
+                        }
                         currentPopSize++;
 
                     }
@@ -187,6 +206,9 @@ namespace NeuralNetwork
                 species[spI].population.Add(childA);
                 currentPopSize++;
             }
+
+            foreach (Species sp in species)
+                sp.Reset();
             Reset();
             generation++;
         }

@@ -43,8 +43,8 @@ public class FitnessGraph : MonoBehaviour {
         bestFitnessSeries.pointColor = Color.green;
         averageFitnessSeries.pointColor = Color.yellow;
 
-        bestFitnessSeries.pointValues = new WMG_List<Vector2>() { Vector2.zero };
-        averageFitnessSeries.pointValues = new WMG_List<Vector2>() { Vector2.zero };
+        bestFitnessSeries.pointValues = new WMG_List<Vector2>() { Vector2.right };
+        averageFitnessSeries.pointValues = new WMG_List<Vector2>() { Vector2.right };
 
 		
 	}

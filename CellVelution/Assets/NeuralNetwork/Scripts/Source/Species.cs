@@ -14,6 +14,8 @@ namespace NeuralNetwork
 
         public int popSize;
 
+        public string speciesName;
+
         private double totalFitness = 0;
 
         public double oldBestFitness = 0;
@@ -35,16 +37,18 @@ namespace NeuralNetwork
 
         public Species()
         {
+            speciesName = "Species " + Random.Range(0, 1000);
             generation = 1;
             oldBestFitness = 0;
             color = Random.ColorHSV(.5f,1,.5f,1);
         }
 
-        public Species(int _generation, double _oldBestFitness, Color _color)
+        public Species(int _generation, double _oldBestFitness, string name, Color _color)
         {
             generation = _generation;
             oldBestFitness = _oldBestFitness;
             color = _color;
+            speciesName = name;
         }
 
         public void CalculateBestWorstAvTot()
@@ -93,13 +97,14 @@ namespace NeuralNetwork
         /// <returns></returns>
         public Genome GetChromoRoulette()
         {
+            CalculateBestWorstAvTot();
             double slice = Random.value * totalFitness;
 
             Genome chosen = null;
 
             if (totalFitness <= 0)
             {
-                throw new System.Exception("Total fitness less than 0.");
+                Debug.Log("Total fitness less than 0.");
             }
 
             double fitnessSoFar = 0;
@@ -115,7 +120,20 @@ namespace NeuralNetwork
                 }
             }
 
+            if (chosen == null)
+            {
+                Debug.LogError("chosen = null");
+                return population[Random.Range(0, population.Count)];
+            }
             return chosen;
+        }
+
+        public void Reset()
+        {
+            totalFitness = 0;
+            bestFitness = 0;
+            worstFitness = 9999999999;
+            averageFitness = 0;
         }
 
     }

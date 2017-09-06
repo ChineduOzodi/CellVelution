@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace NeuralNetwork
 {
+    [System.Serializable]
     /// <summary>
     /// Houses the weight information for the neural network
     /// </summary>
@@ -219,7 +220,7 @@ namespace NeuralNetwork
         {
             Sensor, Output, Hidden
         }
-
+        [System.Serializable]
         private class NodeGenes
         {
             public int node;
@@ -249,7 +250,7 @@ namespace NeuralNetwork
                 value = num;
             }
         }
-
+        [System.Serializable]
         private class ConnectGenes
         {
             public int inn;
@@ -589,7 +590,7 @@ namespace NeuralNetwork
                 {
                     break;
                 }
-                else if ((p1.connectGenes[p1L].innov > p2.connectGenes[p2L].innov) || p1End)
+                else if (p1End)
                 {
                     if (p1End)
                     {
@@ -602,7 +603,32 @@ namespace NeuralNetwork
 
                     p2L++;
                 }
-                else if ((p1.connectGenes[p1L].innov < p2.connectGenes[p2L].innov) || p2End)
+                else if (p2End)
+                {
+                    if (p2End)
+                    {
+                        E++;
+                    }
+                    else
+                    {
+                        D++;
+                    }
+                    p1L++;
+                }
+                else if (p1.connectGenes[p1L].innov > p2.connectGenes[p2L].innov)
+                {
+                    if (p1End)
+                    {
+                        E++;
+                    }
+                    else
+                    {
+                        D++;
+                    }
+
+                    p2L++;
+                }
+                else if (p1.connectGenes[p1L].innov < p2.connectGenes[p2L].innov)
                 {
                     if (p2End)
                     {
