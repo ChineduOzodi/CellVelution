@@ -43,8 +43,8 @@ namespace NeuralNetwork
         public static double geneExpressionChance = .00001;
         
         double interspeciesMating = .001;
-        double newNodeprobability = .1; //defualt .o3
-        double newLinkMutation = .15; //DEFAULT : .05
+        double newNodeprobability = .03; //defualt .o3
+        double newLinkMutation = .05; //DEFAULT : .05
 
         public int NumberNodes { get { return nodeGenes.Count; } }
         public int NumberLinks { get {
@@ -279,7 +279,7 @@ namespace NeuralNetwork
             }
         }
 
-        public void MutateAddConnection()
+        public void MutateAddConnection(ref Genome allInovations)
         {
             List<NodeGenes> connectStart = GetGenes(NodeType.Sensor);
             var connectEnd = GetGenes(NodeType.Output);
@@ -290,7 +290,7 @@ namespace NeuralNetwork
             int startNum = Random.Range(0, connectStart.Count);
             int endNum = Random.Range(0, connectEnd.Count);
 
-            if (connectStart[startNum].node == connectEnd[endNum].node)
+            if (connectStart[startNum].node >= connectEnd[endNum].node)
                 return;
 
             bool add = true;
@@ -308,25 +308,81 @@ namespace NeuralNetwork
 
             if (add)
             {
-                connectGenes.Add(new ConnectGenes(connectStart[startNum].node, connectEnd[endNum].node, Random.Range(-1f, 1f), true, innov++));
+                var connection = allInovations.connectGenes.Find(x => (x.inn == connectStart[startNum].node && x.outt == connectEnd[endNum].node));
+
+                if (connection != null)
+                {
+                    connectGenes.Add(new ConnectGenes(connectStart[startNum].node, connectEnd[endNum].node, Random.Range(-1f, 1f), true, connection.innov));
+                }
+                else
+                {
+                    allInovations.innov++;
+                    allInovations.connectGenes.Add(new ConnectGenes(connectStart[startNum].node, connectEnd[endNum].node, Random.Range(-1f, 1f), true, allInovations.innov));
+                    connectGenes.Add(new ConnectGenes(connectStart[startNum].node, connectEnd[endNum].node, Random.Range(-1f, 1f), true, allInovations.innov));
+                }
+                
             }
         }
 
-        public void MutateAddNode()
+        public void MutateAddNode(ref Genome allInovations)
         {
-            nodeGenes.Add(new NodeGenes(nodeGenes.Count, NodeType.Hidden));
+            nodeGenes.Add(new NodeGenes(allInovations.nodeGenes.Count, NodeType.Hidden));
 
             var newNodeGene = nodeGenes[nodeGenes.Count-1];
 
             var connection = connectGenes[Random.Range(0, connectGenes.Count)];
 
-            connection.enabled = false;
+            bool outExists = false;
+            bool inExisits = false;
 
-            connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, innov++));
-            connectGenes.Add(new ConnectGenes(newNodeGene.node,connection.outt, connection.weight, true, innov++));
+            foreach (NodeGenes node in allInovations.nodeGenes)
+            {
+                if (node.nodeType == NodeType.Hidden)
+                {
+                    foreach (ConnectGenes genes in allInovations.connectGenes)
+                    {
+                        if (node.node == genes.inn && connection.outt == genes.outt)
+                        {
+                            outExists = true;
+                        }
+                        else if (node.node == genes.outt && connection.inn == genes.inn)
+                        {
+                            inExisits = true;
+                        }
+
+                    }
+
+                    if (inExisits && outExists)
+                    {
+                        newNodeGene.node = node.node;
+
+                        connection.enabled = false;
+
+                        var inConnection = allInovations.connectGenes.Find(x => (x.inn == connection.inn && x.outt == newNodeGene.node));
+                        var outConnection = allInovations.connectGenes.Find(x => (x.outt == connection.outt && x.inn == newNodeGene.node));
+
+                        connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, inConnection.innov));
+                        connectGenes.Add(new ConnectGenes(newNodeGene.node, connection.outt, connection.weight, true, outConnection.innov));
+
+                        break;
+                    }
+                }
+            }
+
+
+            if (!inExisits || !outExists){
+                connection.enabled = false;
+                allInovations.innov++;
+                connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, allInovations.innov));
+                allInovations.connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, allInovations.innov));
+                allInovations.innov++;
+                connectGenes.Add(new ConnectGenes(newNodeGene.node, connection.outt, connection.weight, true, allInovations.innov));
+                allInovations.connectGenes.Add(new ConnectGenes(newNodeGene.node, connection.outt, connection.weight, true, allInovations.innov));
+            }
+                
         }
 
-        public static Genome Mate(Genome p1, Genome p2)
+        public static Genome Mate(Genome p1, Genome p2, ref Genome allInovations)
         {
             Genome newGenome = new Genome(p1.numSensors,p1.numOutput);
             newGenome.connectGenes = new List<ConnectGenes>();
@@ -495,21 +551,21 @@ namespace NeuralNetwork
 
             if (Random.value < mutationChance)
             {
-                newGenome.Mutate();
+                newGenome.Mutate(ref allInovations);
             }
             return newGenome;
             
         }
 
-        private void Mutate()
+        private void Mutate(ref Genome allInovations)
         {
             if (Random.value < newNodeprobability)
             {
-                MutateAddNode();
+                MutateAddNode(ref allInovations);
             }
             if (Random.value < newLinkMutation)
             {
-                MutateAddConnection();
+                MutateAddConnection(ref allInovations);
             }
             foreach (ConnectGenes connect in connectGenes)
             {
@@ -528,10 +584,10 @@ namespace NeuralNetwork
 
                 }
 
-                //if (Random.value < geneExpressionChance)
-                //{
-                //    connect.enabled = !connect.enabled;
-                //}
+                if (Random.value < geneExpressionChance)
+                {
+                    connect.enabled = !connect.enabled;
+                }
             }
 
             
@@ -684,16 +740,23 @@ namespace NeuralNetwork
 
             for (int i = 0; i < outputNodes.Count; i++)
             {
-                var num = CalculateValue(outputNodes[i]);
+                var num = CalculateValue(outputNodes[i], 0);
                 outputs.Add(num);
             }
             return outputs;
         }
 
-        private double CalculateValue(NodeGenes nodeGene)
+        private double CalculateValue(NodeGenes nodeGene, int timesRun)
         {
+            timesRun++;
+
             if (nodeGene.valueSet || nodeGene.nodeType == NodeType.Sensor)
                 return nodeGene.value;
+
+            if (timesRun > 10)
+            {
+                Debug.Log("looping");
+            }
 
             List<ConnectGenes> connections = connectGenes.FindAll(x => x.outt == nodeGene.node);
 
@@ -702,7 +765,7 @@ namespace NeuralNetwork
             for (int j = 0; j < connections.Count; j++)
             {
                 if (connections[j].enabled)
-                    value += CalculateValue(nodeGenes.Find(x => x.node == connections[j].inn)) * connections[j].weight;
+                    value += CalculateValue(nodeGenes.Find(x => x.node == connections[j].inn), timesRun) * connections[j].weight;
             }
 
             nodeGene.SetValue(Sigmoid(value, 4.9));

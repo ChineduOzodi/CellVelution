@@ -18,6 +18,8 @@ namespace NeuralNetwork
         /// </summary>
         public List<Species> species;
 
+        public Genome allEnovations;
+
         private int popSize;
         private int chromoLength;
         private double totalBestFitness = 0;
@@ -55,6 +57,8 @@ namespace NeuralNetwork
             species.Add(new Species());
             species[0].population = new List<Genome>();
             species[0].population.Add(new Genome(numInputs, numOutputs));
+
+            allEnovations = new Genome(numInputs, numOutputs);
 
             for (int i = 1; i < popSize; i++)
             {
@@ -136,7 +140,6 @@ namespace NeuralNetwork
         /// <returns>new population genome</returns>
         public void Epoch()
         {
-            CalculateBestWorstAvTot();
             var oldPop = new List<Species>(species);
 
             //sorts population by fitness level
@@ -148,6 +151,11 @@ namespace NeuralNetwork
 
             foreach (Species sp in oldPop)
             {
+                if (sp.bestFitness >= bestFitness)
+                {
+                    sp.generationStagnation = 0;
+                }
+
                 if (sp.generationStagnation < sp.generationStagnationLimit)
                 {
                     sp.generationStagnation++;
@@ -159,7 +167,7 @@ namespace NeuralNetwork
                     species[currentSpecies].population.Add(sp.population[sp.fittestGenome]);
                     species[currentSpecies].population[species[currentSpecies].population.Count - 1].fitness = 0;
 
-                    species[currentSpecies].popSize = Mathf.RoundToInt((float)(sp.bestFitness / totalBestFitness * popSize));
+                    species[currentSpecies].popSize = Mathf.RoundToInt((float)(sp.bestFitness / totalBestFitness * popSize * .75));
                     currentPopSize++;
 
                     for (int i = 0; i < species[currentSpecies].popSize;i++)
@@ -167,7 +175,7 @@ namespace NeuralNetwork
                         Genome mum = Genome.DeepCopy(sp.GetChromoRoulette());
                         Genome dad = Genome.DeepCopy(sp.GetChromoRoulette());
 
-                        Genome childA = Genome.Mate(mum, dad);
+                        Genome childA = Genome.Mate(mum, dad, ref allEnovations);
 
                         bool fitFound = false;
 
@@ -196,14 +204,31 @@ namespace NeuralNetwork
             
             while (currentPopSize  < popSize)
             {
-                int spI = Random.Range(0, species.Count);
+                int spI = Random.Range(0, oldPop.Count);
 
-                Genome mum = Genome.DeepCopy(species[spI].GetChromoRoulette());
-                Genome dad = Genome.DeepCopy(species[spI].GetChromoRoulette());
+                Genome mum = Genome.DeepCopy(oldPop[spI].GetChromoRoulette());
+                Genome dad = Genome.DeepCopy(oldPop[spI].GetChromoRoulette());
 
-                Genome childA = Genome.Mate(mum, dad);
+                Genome childA = Genome.Mate(mum, dad,ref allEnovations);
 
-                species[spI].population.Add(childA);
+                bool fitFound = false;
+
+                for (int b = 0; b < species.Count; b++) //TODO: makes speciation front heavy, shold fix to goto the one with greatest compatibility
+                {
+                    if (Genome.CompatibilityDistance(species[b].population[0], childA) < compatibilityThreshold)
+                    {
+                        species[b].population.Add(childA);
+                        fitFound = true;
+                        break;
+                    }
+                }
+
+                if (!fitFound)
+                {
+                    species.Add(new Species());
+                    species[species.Count - 1].population = new List<Genome>();
+                    species[species.Count - 1].population.Add(childA);
+                }
                 currentPopSize++;
             }
 

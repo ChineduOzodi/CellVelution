@@ -30,7 +30,7 @@ public class SpeciesGraph : MonoBehaviour {
         graph.yAxis.MaxAutoShrink = true;
         graph.xAxis.MaxAutoGrow = true;
         graph.xAxis.MaxAutoShrink = true;
-        graph.graphType = WMG_Axis_Graph.graphTypes.line_stacked;
+        //graph.graphType = WMG_Axis_Graph.graphTypes.line_stacked;
 
         graph.xAxis.SetLabelsUsingMaxMin = true;
         graph.xAxis.LabelType = WMG_Axis.labelTypes.ticks;
@@ -42,9 +42,17 @@ public class SpeciesGraph : MonoBehaviour {
 
 		
 	}
-	
-	// Update is called once per frame
-	public void UpdateGraph (List<Species> species, int generation) {
+
+    private void Update()
+    {
+        foreach (WMG_Series series in seriesList)
+        {
+            series.connectFirstToLast = false;
+        }
+    }
+
+    // Update is called once per frame
+    public void UpdateGraph (List<Species> species, int generation) {
 
         foreach(Species sp in species)
         {

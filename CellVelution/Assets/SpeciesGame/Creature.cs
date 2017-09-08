@@ -638,7 +638,8 @@ public class Creature : Controller<CreatureModel> {
         model.inputs = new List<double>();
         model.ouputs = new List<double>();
 
-        model.genome = Genome.Mate(model.genome, model.genome);
+        var allInovations = Genome.DeepCopy(model.genome);
+        model.genome = Genome.Mate(model.genome, model.genome, ref allInovations); //TODO: check all innovations reference
 
 
         string[][] startBlock =

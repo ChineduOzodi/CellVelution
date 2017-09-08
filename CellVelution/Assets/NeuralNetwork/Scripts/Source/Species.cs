@@ -40,7 +40,7 @@ namespace NeuralNetwork
             speciesName = "Species " + Random.Range(0, 1000);
             generation = 1;
             oldBestFitness = 0;
-            color = Random.ColorHSV(.5f,1,.5f,1);
+            color = Random.ColorHSV(0,1,.75f,1,.9f,1);
         }
 
         public Species(int _generation, double _oldBestFitness, string name, Color _color)
@@ -104,26 +104,27 @@ namespace NeuralNetwork
 
             if (totalFitness <= 0)
             {
-                Debug.Log("Total fitness less than 0.");
+                chosen = population[Random.Range(0, population.Count)];
             }
-
-            double fitnessSoFar = 0;
-
-            for (int i = 0; i < population.Count; i++)
+            else
             {
-                fitnessSoFar += population[i].fitness;
+                double fitnessSoFar = 0;
 
-                if (fitnessSoFar >= slice)
+                for (int i = 0; i < population.Count; i++)
                 {
-                    chosen = population[i];
-                    break;
+                    fitnessSoFar += population[i].fitness;
+
+                    if (fitnessSoFar >= slice)
+                    {
+                        chosen = population[i];
+                        break;
+                    }
                 }
             }
 
             if (chosen == null)
             {
-                Debug.LogError("chosen = null");
-                return population[Random.Range(0, population.Count)];
+                throw new System.Exception("chosen = null");
             }
             return chosen;
         }
