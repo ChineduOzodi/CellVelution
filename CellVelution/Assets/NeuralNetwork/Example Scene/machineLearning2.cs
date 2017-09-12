@@ -91,7 +91,6 @@ public class machineLearning2 : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-
         //Used to track the best performing spawn
         double bestFitness = 0;
         int bestSpawn = 0;
@@ -223,7 +222,9 @@ public class machineLearning2 : MonoBehaviour {
             updateTime += populationResetTime;
 
             //--------------The main function that creates the new population into the genAlg class--------//
+
             genAlg.Epoch();
+
 
             for (int i = 0; i < population; i++)
             {

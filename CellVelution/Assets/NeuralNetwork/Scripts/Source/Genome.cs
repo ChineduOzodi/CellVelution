@@ -290,7 +290,10 @@ namespace NeuralNetwork
             int startNum = Random.Range(0, connectStart.Count);
             int endNum = Random.Range(0, connectEnd.Count);
 
-            if (connectStart[startNum].node >= connectEnd[endNum].node)
+            if (connectStart[startNum].node == connectEnd[endNum].node)
+                return;
+
+            if (connectStart[startNum].node > connectEnd[endNum].node && connectEnd[endNum].nodeType == NodeType.Hidden)
                 return;
 
             bool add = true;
@@ -332,46 +335,33 @@ namespace NeuralNetwork
 
             var connection = connectGenes[Random.Range(0, connectGenes.Count)];
 
-            bool outExists = false;
-            bool inExisits = false;
+            bool exists = false;
 
             foreach (NodeGenes node in allInovations.nodeGenes)
             {
                 if (node.nodeType == NodeType.Hidden)
                 {
-                    foreach (ConnectGenes genes in allInovations.connectGenes)
-                    {
-                        if (node.node == genes.inn && connection.outt == genes.outt)
-                        {
-                            outExists = true;
-                        }
-                        else if (node.node == genes.outt && connection.inn == genes.inn)
-                        {
-                            inExisits = true;
-                        }
+                    var inConnection = allInovations.connectGenes.Find(x => (x.inn == connection.inn && x.outt == newNodeGene.node));
+                    var outConnection = allInovations.connectGenes.Find(x => (x.outt == connection.outt && x.inn == newNodeGene.node));
 
-                    }
-
-                    if (inExisits && outExists)
+                    if (inConnection != null && outConnection != null)
                     {
                         newNodeGene.node = node.node;
 
                         connection.enabled = false;
 
-                        var inConnection = allInovations.connectGenes.Find(x => (x.inn == connection.inn && x.outt == newNodeGene.node));
-                        var outConnection = allInovations.connectGenes.Find(x => (x.outt == connection.outt && x.inn == newNodeGene.node));
-
                         connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, inConnection.innov));
                         connectGenes.Add(new ConnectGenes(newNodeGene.node, connection.outt, connection.weight, true, outConnection.innov));
-
+                        exists = true;
                         break;
                     }
                 }
             }
 
 
-            if (!inExisits || !outExists){
+            if (!exists){
                 connection.enabled = false;
+                allInovations.nodeGenes.Add(new NodeGenes(allInovations.nodeGenes.Count, NodeType.Hidden));
                 allInovations.innov++;
                 connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, allInovations.innov));
                 allInovations.connectGenes.Add(new ConnectGenes(connection.inn, newNodeGene.node, 1, true, allInovations.innov));
@@ -750,12 +740,15 @@ namespace NeuralNetwork
         {
             timesRun++;
 
-            if (nodeGene.valueSet || nodeGene.nodeType == NodeType.Sensor)
+            if (nodeGene.valueSet)
                 return nodeGene.value;
+
+            if (nodeGene.nodeType == NodeType.Sensor)
+                throw new System.Exception("Sensor value error");
 
             if (timesRun > 10)
             {
-                Debug.Log("looping");
+                throw new System.Exception("Looping");
             }
 
             List<ConnectGenes> connections = connectGenes.FindAll(x => x.outt == nodeGene.node);
