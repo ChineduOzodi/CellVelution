@@ -14,7 +14,6 @@ public class machineLearning2 : MonoBehaviour {
     public NeuralMap graph;
     public bool updateGraph;
     public FitnessGraph fitnessGraph;
-    public SpeciesGraph speciesGraph;
 
     public GameObject spawn;
     public GameObject food;
@@ -71,7 +70,7 @@ public class machineLearning2 : MonoBehaviour {
                 randomWatchSpecies = Random.Range(0, genAlg.species.Count);
                 randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
                 graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
-                speciesGraph.UpdateGraph(genAlg.species,genAlg.generation);
+                fitnessGraph.UpdateSpeciesPopulationGraph(genAlg.species,genAlg.generation);
             }
             //--------Set the random weights generated in genAlg into 
             //nNetwork[i].PutWeights(genAlg.population[i].weights);
@@ -210,7 +209,7 @@ public class machineLearning2 : MonoBehaviour {
         //More Stats
         genAlg.CalculateBestWorstAvTot();
         infoText.text += "\nBest Fitness: " + genAlg.bestFitness + "\nAverage Fitness: " + genAlg.averageFitness + "\nLowest Fitness: " + genAlg.worstFitness;
-        fitnessGraph.UpdateGraph(genAlg.generation, genAlg.bestFitness, genAlg.averageFitness);
+        fitnessGraph.UpdateFitnessGraph(genAlg.generation, genAlg.bestFitness, genAlg.averageFitness);
 
         //Change first spawn's color so it is recognizable
         spawns[randomWatchSpawn].GetComponent<SpriteRenderer>().color = Color.cyan;
@@ -243,7 +242,7 @@ public class machineLearning2 : MonoBehaviour {
             randomWatchSpecies = Random.Range(0, genAlg.species.Count);
             randomWatchGenome = Random.Range(0, genAlg.species[randomWatchSpecies].population.Count);
             graph.CreateGraph(genAlg.species[randomWatchSpecies].population[randomWatchGenome]);
-            speciesGraph.UpdateGraph(genAlg.species, genAlg.generation);
+            fitnessGraph.UpdateSpeciesPopulationGraph(genAlg.species, genAlg.generation);
         }
     }
 }

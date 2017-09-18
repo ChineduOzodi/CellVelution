@@ -9,12 +9,12 @@ public class CameraControl : MonoBehaviour {
 
     Camera mainCam;
 
-    SpeciesGame gameController;
+    machineLearning2 gameController;
 
     // Use this for initialization
     void Start () {
         mainCam = GetComponent<Camera>();
-        gameController = GetComponent<SpeciesGame>();
+        gameController = GetComponent<machineLearning2>();
     }
 	
 	// Update is called once per frame
@@ -35,14 +35,14 @@ public class CameraControl : MonoBehaviour {
         }
 
         if (transform.position.y < 0)
-            transform.position = new Vector3(transform.position.x, gameController.land.y);
-        else if (transform.position.y > gameController.land.y)
-            transform.position = new Vector3(transform.position.x, 0);
+            transform.position = new Vector3(transform.position.x, gameController.gameArea.y,-10);
+        else if (transform.position.y > gameController.gameArea.y)
+            transform.position = new Vector3(transform.position.x, 0, -10);
 
         if (transform.position.x < 0)
-            transform.position = new Vector3(gameController.land.x, transform.position.y);
-        else if (transform.position.x > gameController.land.x)
-            transform.position = new Vector3(0, transform.position.y);
+            transform.position = new Vector3(gameController.gameArea.x, transform.position.y, -10);
+        else if (transform.position.x > gameController.gameArea.x)
+            transform.position = new Vector3(0, transform.position.y, -10);
 
     }
 }

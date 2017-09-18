@@ -159,7 +159,6 @@
     <Compile Include="Assets\Graph_Maker\Scripts\WMG_Series.cs" />
     <Compile Include="Assets\NeuralNetwork\Example Scene\FitnessGraph.cs" />
     <Compile Include="Assets\NeuralNetwork\Example Scene\NeuralMap.cs" />
-    <Compile Include="Assets\NeuralNetwork\Example Scene\SpeciesGraph.cs" />
     <Compile Include="Assets\NeuralNetwork\Example Scene\machineLearning2.cs" />
     <Compile Include="Assets\NeuralNetwork\Scripts\Source\GeneticAlgorithm.cs" />
     <Compile Include="Assets\NeuralNetwork\Scripts\Source\Genome.cs" />
